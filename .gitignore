@@ -1,0 +1,13 @@
+./client/node_modules
+./server/node_modules
+./client/logs
+./client/*.log
+./client/npm-debug.log*
+./client/yarn-error.log*
+./client/yarn-debug.log*
+./client/pnpm-debug.log*
+./client/lerna-debug.log*
+./client/dist
+./client/dist-src
+./client/*.local
+
