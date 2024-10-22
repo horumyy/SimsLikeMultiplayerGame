@@ -4,9 +4,13 @@ import { io } from "socket.io-client";
 
 export const socket = io("http://localhost:3001");
 export const charactersAtom = atom([]);
+export const mapAtom = atom([]);
+export const userAtom = atom([]);
 
 export const SocketManager = () => {
   const [_characters, setCharacters] = useAtom(charactersAtom);
+  const [_map, setMap] = useAtom(mapAtom);
+  const [_user, setUser] = useAtom(userAtom);
   useEffect(() => {
     function onConnect() {
       console.log("connected");
@@ -14,8 +18,10 @@ export const SocketManager = () => {
     function onDisconnect() {
       console.log("disconnected");
     }
-    function onHello() {
-      console.log("hello");
+    function onHello(values) {
+      setMap(values.map);
+      setUser(values.id);
+      setCharacters(values.characters);
     }
 
     function onCharacters(value) {

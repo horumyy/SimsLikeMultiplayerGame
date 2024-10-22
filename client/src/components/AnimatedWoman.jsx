@@ -7,6 +7,8 @@ import React from "react";
 import { useFrame, useGraph } from "@react-three/fiber";
 import { useGLTF, useAnimations } from "@react-three/drei";
 import { SkeletonUtils } from "three-stdlib";
+import { userAtom } from "./SocketManager";
+import { useAtom } from "jotai";
 
 const MOVEMENT_SPEED = 0.032;
 
@@ -14,6 +16,7 @@ export function AnimatedWoman({
   hairColor = "lightcoral",
   topColor = "pink",
   bottomColor = "teal",
+  id,
   ...props
 }) {
   const position = React.useMemo(() => props.position, []);
@@ -30,7 +33,9 @@ export function AnimatedWoman({
     return () => actions[animation]?.fadeOut(0.32);
   }, [animation]);
 
-  useFrame(() => {
+  const [user] = useAtom(userAtom);
+
+  useFrame((state) => {
     if (group.current.position.distanceTo(props.position) > 0.1) {
       const direction = group.current.position
         .clone()
@@ -42,6 +47,12 @@ export function AnimatedWoman({
       setAnimation("CharacterArmature|Run");
     } else {
       setAnimation("CharacterArmature|Idle");
+    }
+    if (id === user) {
+      state.camera.position.x = group.current.position.x + 8;
+      state.camera.position.z = group.current.position.z + 8;
+      state.camera.position.y = group.current.position.y + 8;
+      state.camera.lookAt(group.current.position);
     }
   });
   return (
