@@ -29,16 +29,29 @@ export const SocketManager = () => {
       setCharacters(value);
     }
 
+    function onPlayerMove(character) {
+      setCharacters((prev) => {
+        return prev.map((c) => {
+          if (c.id === character.id) {
+            return character;
+          }
+          return c;
+        });
+      });
+    }
+
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("hello", onHello);
     socket.on("characters", onCharacters);
+    socket.on("playerMove", onPlayerMove);
 
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
       socket.off("hello", onHello);
       socket.off("characters", onCharacters);
+      socket.off("playerMove", onPlayerMove);
     };
   }, []);
 };

@@ -9,6 +9,7 @@ import { useGLTF, useAnimations } from "@react-three/drei";
 import { SkeletonUtils } from "three-stdlib";
 import { userAtom } from "./SocketManager";
 import { useAtom } from "jotai";
+import useGrid from "../hooks/useGrid";
 
 const MOVEMENT_SPEED = 0.032;
 
@@ -20,6 +21,16 @@ export function AnimatedWoman({
   ...props
 }) {
   const position = React.useMemo(() => props.position, []);
+  const [path, setPath] = React.useState([]);
+  const { gridToVector3 } = useGrid();
+
+  React.useEffect(() => {
+    const path = [];
+    props.path?.forEach((gridPosition) => {
+      path.push(gridToVector3(gridPosition));
+    });
+    setPath(path);
+  }, [props.path]);
 
   const group = React.useRef();
   const { scene, animations } = useGLTF("/models/Animated Woman.glb");
@@ -36,15 +47,17 @@ export function AnimatedWoman({
   const [user] = useAtom(userAtom);
 
   useFrame((state) => {
-    if (group.current.position.distanceTo(props.position) > 0.1) {
+    if (path?.length && group.current.position.distanceTo(path[0]) > 0.1) {
       const direction = group.current.position
         .clone()
-        .sub(props.position)
+        .sub(path[0])
         .normalize()
         .multiplyScalar(MOVEMENT_SPEED);
       group.current.position.sub(direction);
-      group.current.lookAt(props.position);
+      group.current.lookAt(path[0]);
       setAnimation("CharacterArmature|Run");
+    } else if (path?.length) {
+      path.shift();
     } else {
       setAnimation("CharacterArmature|Idle");
     }
@@ -56,7 +69,13 @@ export function AnimatedWoman({
     }
   });
   return (
-    <group ref={group} {...props} position={position} dispose={null}>
+    <group
+      ref={group}
+      {...props}
+      position={position}
+      name={`character-${id}`}
+      dispose={null}
+    >
       <group name="Root_Scene">
         <group name="RootNode">
           <group
