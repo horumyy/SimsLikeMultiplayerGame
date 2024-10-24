@@ -1,6 +1,5 @@
-import { Server } from "socket.io";
 import pathfinding from "pathfinding";
-
+import { Server } from "socket.io";
 const io = new Server({
   cors: {
     origin: "http://localhost:5173",
@@ -429,6 +428,13 @@ const findPath = (start, end) => {
 };
 
 const updateGrid = () => {
+  // RESET
+  for (let x = 0; x < map.size[0] * map.gridDivision; x++) {
+    for (let y = 0; y < map.size[1] * map.gridDivision; y++) {
+      grid.setWalkableAt(x, y, true);
+    }
+  }
+
   map.items.forEach((item) => {
     if (item.walkable || item.wall) {
       return;
@@ -450,8 +456,9 @@ const updateGrid = () => {
 };
 
 updateGrid();
+
 const generateRandomPosition = () => {
-  for (let i = 0; i < map.size[0]; i++) {
+  for (let i = 0; i < 100; i++) {
     const x = Math.floor(Math.random() * map.size[0] * map.gridDivision);
     const y = Math.floor(Math.random() * map.size[1] * map.gridDivision);
     if (grid.isWalkableAt(x, y)) {
@@ -465,7 +472,8 @@ const generateRandomHexColor = () => {
 };
 
 io.on("connection", (socket) => {
-  console.log("User connected");
+  console.log("user connected");
+
   characters.push({
     id: socket.id,
     position: generateRandomPosition(),
@@ -473,6 +481,7 @@ io.on("connection", (socket) => {
     topColor: generateRandomHexColor(),
     bottomColor: generateRandomHexColor(),
   });
+
   socket.emit("hello", {
     map,
     characters,
@@ -495,8 +504,22 @@ io.on("connection", (socket) => {
     io.emit("playerMove", character);
   });
 
+  socket.on("itemsUpdate", (items) => {
+    map.items = items;
+    characters.forEach((character) => {
+      character.path = [];
+      character.position = generateRandomPosition();
+    });
+    updateGrid();
+    io.emit("mapUpdate", {
+      map,
+      characters,
+    });
+  });
+
   socket.on("disconnect", () => {
-    console.log("User disconnected");
+    console.log("user disconnected");
+
     characters.splice(
       characters.findIndex((character) => character.id === socket.id),
       1,
