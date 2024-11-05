@@ -5,19 +5,19 @@ export const shopModeAtom = atom(false);
 export const draggedItemAtom = atom(null);
 export const draggedItemRotationAtom = atom(0);
 
-const UI = () => {
+export const UI = () => {
   const [buildMode, setBuildMode] = useAtom(buildModeAtom);
   const [shopMode, setShopMode] = useAtom(shopModeAtom);
   const [draggedItem, setDraggedItem] = useAtom(draggedItemAtom);
   const [draggedItemRotation, setDraggedItemRotation] = useAtom(
-    draggedItemRotationAtom,
+    draggedItemRotationAtom
   );
 
   return (
     <div className="fixed inset-4 flex items-end justify-center pointer-events-none">
       <div className="flex items-center space-x-4 pointer-events-auto">
         {/* BACK */}
-        {(buildMode || shopMode) && !draggedItem && (
+        {(buildMode || shopMode) && draggedItem === null && (
           <button
             className="p-4 rounded-full bg-slate-500 text-white drop-shadow-md cursor-pointer hover:bg-slate-800 transition-colors"
             onClick={() => {
@@ -63,7 +63,7 @@ const UI = () => {
           </button>
         )}
         {/* SHOP */}
-        {buildMode && !shopMode && !draggedItem && (
+        {buildMode && !shopMode && draggedItem === null && (
           <button
             className="p-4 rounded-full bg-slate-500 text-white drop-shadow-md cursor-pointer hover:bg-slate-800 transition-colors"
             onClick={() => setShopMode(true)}
@@ -85,12 +85,12 @@ const UI = () => {
           </button>
         )}
         {/* ROTATE */}
-        {buildMode && !shopMode && draggedItem && (
+        {buildMode && !shopMode && draggedItem !== null && (
           <button
             className="p-4 rounded-full bg-slate-500 text-white drop-shadow-md cursor-pointer hover:bg-slate-800 transition-colors"
             onClick={() =>
               setDraggedItemRotation(
-                draggedItemRotation === 3 ? 0 : draggedItemRotation + 1,
+                draggedItemRotation === 3 ? 0 : draggedItemRotation + 1
               )
             }
           >
@@ -111,7 +111,7 @@ const UI = () => {
           </button>
         )}
         {/* CANCEL */}
-        {buildMode && !shopMode && draggedItem && (
+        {buildMode && !shopMode && draggedItem !== null && (
           <button
             className="p-4 rounded-full bg-slate-500 text-white drop-shadow-md cursor-pointer hover:bg-slate-800 transition-colors"
             onClick={() => setDraggedItem(null)}
@@ -136,4 +136,3 @@ const UI = () => {
     </div>
   );
 };
-export default UI;

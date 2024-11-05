@@ -1,12 +1,12 @@
 import { useCursor, useGLTF } from "@react-three/drei";
 import { useAtom } from "jotai";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SkeletonUtils } from "three-stdlib";
-import useGrid from "../hooks/useGrid";
+import { useGrid } from "../hooks/useGrid";
 import { mapAtom } from "./SocketManager";
 import { buildModeAtom } from "./UI";
 
-const Item = ({
+export const Item = ({
   item,
   onClick,
   isDragging,
@@ -28,13 +28,22 @@ const Item = ({
   const [buildMode] = useAtom(buildModeAtom);
   useCursor(buildMode ? hover : undefined);
 
+  useEffect(() => {
+    clone.traverse((child) => {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+  }, []);
+
   return (
     <group
       onClick={onClick}
       position={gridToVector3(
         isDragging ? dragPosition || gridPosition : gridPosition,
         width,
-        height,
+        height
       )}
       onPointerEnter={() => setHover(true)}
       onPointerLeave={() => setHover(false)}
@@ -55,4 +64,3 @@ const Item = ({
     </group>
   );
 };
-export default Item;

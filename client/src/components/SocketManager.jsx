@@ -4,13 +4,15 @@ import { io } from "socket.io-client";
 
 export const socket = io("http://localhost:3001");
 export const charactersAtom = atom([]);
-export const mapAtom = atom([]);
-export const userAtom = atom([]);
+export const mapAtom = atom(null);
+export const userAtom = atom(null);
+export const itemsAtom = atom(null);
 
 export const SocketManager = () => {
   const [_characters, setCharacters] = useAtom(charactersAtom);
   const [_map, setMap] = useAtom(mapAtom);
   const [_user, setUser] = useAtom(userAtom);
+  const [_items, setItems] = useAtom(itemsAtom);
   useEffect(() => {
     function onConnect() {
       console.log("connected");
@@ -18,31 +20,31 @@ export const SocketManager = () => {
     function onDisconnect() {
       console.log("disconnected");
     }
-    function onHello(values) {
-      setMap(values.map);
-      setUser(values.id);
-      setCharacters(values.characters);
+
+    function onHello(value) {
+      setMap(value.map);
+      setUser(value.id);
+      setItems(value.items);
+      setCharacters(value.characters);
     }
 
     function onCharacters(value) {
-      console.log("characters", value);
       setCharacters(value);
     }
 
-    function onPlayerMove(character) {
+    function onPlayerMove(value) {
       setCharacters((prev) => {
-        return prev.map((c) => {
-          if (c.id === character.id) {
-            return character;
+        return prev.map((character) => {
+          if (character.id === value.id) {
+            return value;
           }
-          return c;
+          return character;
         });
       });
     }
-
-    function onMapUpdate(values) {
-      setMap(values.map);
-      setCharacters(values.characters);
+    function onMapUpdate(value) {
+      setMap(value.map);
+      setCharacters(value.characters);
     }
 
     socket.on("connect", onConnect);
@@ -51,7 +53,6 @@ export const SocketManager = () => {
     socket.on("characters", onCharacters);
     socket.on("playerMove", onPlayerMove);
     socket.on("mapUpdate", onMapUpdate);
-
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
