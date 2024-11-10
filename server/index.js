@@ -276,144 +276,144 @@ const map = {
   size: [10, 10],
   gridDivision: 2,
   items: [
-    // {
-    //   ...items.showerRound,
-    //   gridPosition: [0, 0],
-    // },
-    // {
-    //   ...items.toiletSquare,
-    //   gridPosition: [0, 3],
-    //   rotation: 1,
-    // },
-    // {
-    //   ...items.washer,
-    //   gridPosition: [5, 0],
-    // },
-    // {
-    //   ...items.bathroomSink,
-    //   gridPosition: [7, 0],
-    // },
-    // {
-    //   ...items.trashcan,
-    //   gridPosition: [0, 5],
-    //   rotation: 1,
-    // },
-    // {
-    //   ...items.bathroomCabinetDrawer,
-    //   gridPosition: [3, 0],
-    // },
-    // {
-    //   ...items.bathtub,
-    //   gridPosition: [4, 4],
-    // },
-    // {
-    //   ...items.bathtub,
-    //   gridPosition: [0, 8],
-    //   rotation: 3,
-    // },
-    // {
-    //   ...items.bathroomCabinet,
-    //   gridPosition: [3, 0],
-    // },
-    // {
-    //   ...items.bathroomMirror,
-    //   gridPosition: [0, 8],
-    //   rotation: 1,
-    // },
-    // {
-    //   ...items.bathroomMirror,
-    //   gridPosition: [, 10],
-    //   rotation: 1,
-    // },
-    // {
-    //   ...items.tableCoffee,
-    //   gridPosition: [10, 8],
-    // },
-    // {
-    //   ...items.rugRectangle,
-    //   gridPosition: [8, 7],
-    // },
-    // {
-    //   ...items.loungeSofaCorner,
-    //   gridPosition: [6, 10],
-    // },
-    // {
-    //   ...items.bear,
-    //   gridPosition: [0, 3],
-    //   rotation: 1,
-    // },
-    // {
-    //   ...items.plant,
-    //   gridPosition: [11, 13],
-    // },
-    // {
-    //   ...items.cabinetBedDrawerTable,
-    //   gridPosition: [13, 19],
-    // },
-    // {
-    //   ...items.cabinetBedDrawer,
-    //   gridPosition: [19, 19],
-    // },
-    // {
-    //   ...items.bedDouble,
-    //   gridPosition: [14, 15],
-    // },
-    // {
-    //   ...items.bookcaseClosedWide,
-    //   gridPosition: [12, 0],
-    //   rotation: 2,
-    // },
-    // {
-    //   ...items.speaker,
-    //   gridPosition: [11, 0],
-    // },
-    // {
-    //   ...items.speakerSmall,
-    //   gridPosition: [15, 0],
-    // },
-    // {
-    //   ...items.loungeChair,
-    //   gridPosition: [10, 4],
-    // },
-    // {
-    //   ...items.loungeSofaOttoman,
-    //   gridPosition: [14, 4],
-    // },
-    // {
-    //   ...items.loungeDesignSofa,
-    //   gridPosition: [18, 0],
-    //   rotation: 1,
-    // },
-    // {
-    //   ...items.kitchenCabinetCornerRound,
-    //   gridPosition: [2, 18],
-    //   rotation: 2,
-    // },
-    // {
-    //   ...items.kitchenCabinetCornerInner,
-    //   gridPosition: [0, 18],
-    //   rotation: 2,
-    // },
-    // {
-    //   ...items.kitchenStove,
-    //   gridPosition: [0, 16],
-    //   rotation: 1,
-    // },
-    // {
-    //   ...items.dryer,
-    //   gridPosition: [0, 14],
-    //   rotation: 1,
-    // },
-    // {
-    //   ...items.lampRoundFloor,
-    //   gridPosition: [0, 12],
-    // },
+    {
+      ...items.showerRound,
+      gridPosition: [0, 0],
+    },
+    {
+      ...items.toiletSquare,
+      gridPosition: [0, 3],
+      rotation: 1,
+    },
+    {
+      ...items.washer,
+      gridPosition: [5, 0],
+    },
+    {
+      ...items.bathroomSink,
+      gridPosition: [7, 0],
+    },
+    {
+      ...items.trashcan,
+      gridPosition: [0, 5],
+      rotation: 1,
+    },
+    {
+      ...items.bathroomCabinetDrawer,
+      gridPosition: [3, 0],
+    },
+    {
+      ...items.bathtub,
+      gridPosition: [4, 4],
+    },
+    {
+      ...items.bathtub,
+      gridPosition: [0, 8],
+      rotation: 3,
+    },
+    {
+      ...items.bathroomCabinet,
+      gridPosition: [3, 0],
+    },
+    {
+      ...items.bathroomMirror,
+      gridPosition: [0, 8],
+      rotation: 1,
+    },
+    {
+      ...items.bathroomMirror,
+      gridPosition: [, 10],
+      rotation: 1,
+    },
+    {
+      ...items.tableCoffee,
+      gridPosition: [10, 8],
+    },
+    {
+      ...items.rugRectangle,
+      gridPosition: [8, 7],
+    },
+    {
+      ...items.loungeSofaCorner,
+      gridPosition: [6, 10],
+    },
+    {
+      ...items.bear,
+      gridPosition: [0, 3],
+      rotation: 1,
+    },
+    {
+      ...items.plant,
+      gridPosition: [11, 13],
+    },
+    {
+      ...items.cabinetBedDrawerTable,
+      gridPosition: [13, 19],
+    },
+    {
+      ...items.cabinetBedDrawer,
+      gridPosition: [19, 19],
+    },
+    {
+      ...items.bedDouble,
+      gridPosition: [14, 15],
+    },
+    {
+      ...items.bookcaseClosedWide,
+      gridPosition: [12, 0],
+      rotation: 2,
+    },
+    {
+      ...items.speaker,
+      gridPosition: [11, 0],
+    },
+    {
+      ...items.speakerSmall,
+      gridPosition: [15, 0],
+    },
+    {
+      ...items.loungeChair,
+      gridPosition: [10, 4],
+    },
+    {
+      ...items.loungeSofaOttoman,
+      gridPosition: [14, 4],
+    },
+    {
+      ...items.loungeDesignSofa,
+      gridPosition: [18, 0],
+      rotation: 1,
+    },
+    {
+      ...items.kitchenCabinetCornerRound,
+      gridPosition: [2, 18],
+      rotation: 2,
+    },
+    {
+      ...items.kitchenCabinetCornerInner,
+      gridPosition: [0, 18],
+      rotation: 2,
+    },
+    {
+      ...items.kitchenStove,
+      gridPosition: [0, 16],
+      rotation: 1,
+    },
+    {
+      ...items.dryer,
+      gridPosition: [0, 14],
+      rotation: 1,
+    },
+    {
+      ...items.lampRoundFloor,
+      gridPosition: [0, 12],
+    },
   ],
 };
 
 const grid = new pathfinding.Grid(
   map.size[0] * map.gridDivision,
-  map.size[1] * map.gridDivision
+  map.size[1] * map.gridDivision,
 );
 
 const finder = new pathfinding.AStarFinder({
@@ -448,7 +448,7 @@ const updateGrid = () => {
         grid.setWalkableAt(
           item.gridPosition[0] + x,
           item.gridPosition[1] + y,
-          false
+          false,
         );
       }
     }
@@ -480,6 +480,7 @@ io.on("connection", (socket) => {
     hairColor: generateRandomHexColor(),
     topColor: generateRandomHexColor(),
     bottomColor: generateRandomHexColor(),
+    avatarUrl: "https://models.readyplayer.me/673103d3a06abaf268eb0ff8.glb",
   });
 
   socket.emit("hello", {
@@ -491,9 +492,17 @@ io.on("connection", (socket) => {
 
   io.emit("characters", characters);
 
+  socket.on("characterAvatarUpdate", (avatarUrl) => {
+    const character = characters.find(
+      (character) => character.id === socket.id,
+    );
+    character.avatarUrl = avatarUrl.split("?")[0] + "?" + new Date().getTime();
+    io.emit("characters", characters);
+  });
+
   socket.on("move", (from, to) => {
     const character = characters.find(
-      (character) => character.id === socket.id
+      (character) => character.id === socket.id,
     );
     const path = findPath(from, to);
     if (!path) {
@@ -502,6 +511,12 @@ io.on("connection", (socket) => {
     character.position = from;
     character.path = path;
     io.emit("playerMove", character);
+  });
+
+  socket.on("dance", () => {
+    io.emit("playerDance", {
+      id: socket.id,
+    });
   });
 
   socket.on("itemsUpdate", (items) => {
@@ -522,7 +537,7 @@ io.on("connection", (socket) => {
 
     characters.splice(
       characters.findIndex((character) => character.id === socket.id),
-      1
+      1,
     );
     io.emit("characters", characters);
   });

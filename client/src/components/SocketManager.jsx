@@ -32,16 +32,6 @@ export const SocketManager = () => {
       setCharacters(value);
     }
 
-    function onPlayerMove(value) {
-      setCharacters((prev) => {
-        return prev.map((character) => {
-          if (character.id === value.id) {
-            return value;
-          }
-          return character;
-        });
-      });
-    }
     function onMapUpdate(value) {
       setMap(value.map);
       setCharacters(value.characters);
@@ -51,14 +41,12 @@ export const SocketManager = () => {
     socket.on("disconnect", onDisconnect);
     socket.on("hello", onHello);
     socket.on("characters", onCharacters);
-    socket.on("playerMove", onPlayerMove);
     socket.on("mapUpdate", onMapUpdate);
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
       socket.off("hello", onHello);
       socket.off("characters", onCharacters);
-      socket.off("playerMove", onPlayerMove);
       socket.off("mapUpdate", onMapUpdate);
     };
   }, []);

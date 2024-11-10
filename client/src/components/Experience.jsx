@@ -2,9 +2,9 @@ import { Environment, Grid, OrbitControls, useCursor } from "@react-three/drei";
 
 import { useThree } from "@react-three/fiber";
 import { useAtom } from "jotai";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useGrid } from "../hooks/useGrid";
-import { AnimatedWoman } from "./AnimatedWoman";
+import { Avatar } from "./Avatar";
 import { Item } from "./Item";
 import { Shop } from "./Shop";
 import { charactersAtom, mapAtom, socket, userAtom } from "./SocketManager";
@@ -36,7 +36,7 @@ export const Experience = () => {
       socket.emit(
         "move",
         vector3ToGrid(character.position),
-        vector3ToGrid(e.point)
+        vector3ToGrid(e.point),
       );
     } else {
       if (draggedItem !== null) {
@@ -56,7 +56,7 @@ export const Experience = () => {
 
   const [draggedItem, setDraggedItem] = useAtom(draggedItemAtom);
   const [draggedItemRotation, setDraggedItemRotation] = useAtom(
-    draggedItemRotationAtom
+    draggedItemRotationAtom,
   );
   const [dragPosition, setDragPosition] = useState([0, 0]);
   const [canDrop, setCanDrop] = useState(false);
@@ -248,15 +248,16 @@ export const Experience = () => {
       )}
       {!buildMode &&
         characters.map((character) => (
-          <AnimatedWoman
-            key={character.id}
-            id={character.id}
-            path={character.path}
-            position={gridToVector3(character.position)}
-            hairColor={character.hairColor}
-            topColor={character.topColor}
-            bottomColor={character.bottomColor}
-          />
+          <Suspense key={character.id}>
+            <Avatar
+              id={character.id}
+              position={gridToVector3(character.position)}
+              hairColor={character.hairColor}
+              topColor={character.topColor}
+              bottomColor={character.bottomColor}
+              avatarUrl={character.avatarUrl}
+            />
+          </Suspense>
         ))}
     </>
   );

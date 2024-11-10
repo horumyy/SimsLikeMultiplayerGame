@@ -11,6 +11,7 @@
   "dependencies": {
     "@react-three/drei": "9.75.0",
     "@react-three/fiber": "8.13.3",
+    "@readyplayerme/react-avatar-creator": "^0.5.0",
     "@types/three": "0.152.1",
     "autoprefixer": "^10.4.15",
     "jotai": "^2.2.3",
