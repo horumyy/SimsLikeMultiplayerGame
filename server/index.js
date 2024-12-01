@@ -1,15 +1,255 @@
+import fs from "fs";
 import pathfinding from "pathfinding";
 import { Server } from "socket.io";
+
+const origin = process.env.CLIENT_URL || "http://localhost:5173";
 const io = new Server({
   cors: {
-    origin: "http://localhost:5173",
+    origin,
   },
 });
 
-io.listen(3001);
+io.listen(3000);
 
-const characters = [];
+console.log("Server started on port 3000, allowed cors origin: " + origin);
 
+// PATHFINDING UTILS
+
+const finder = new pathfinding.AStarFinder({
+  allowDiagonal: true,
+  dontCrossCorners: true,
+});
+
+const findPath = (room, start, end) => {
+  const gridClone = room.grid.clone();
+  const path = finder.findPath(start[0], start[1], end[0], end[1], gridClone);
+  return path;
+};
+
+const updateGrid = (room) => {
+  // RESET GRID FOR ROOM
+  for (let x = 0; x < room.size[0] * room.gridDivision; x++) {
+    for (let y = 0; y < room.size[1] * room.gridDivision; y++) {
+      room.grid.setWalkableAt(x, y, true);
+    }
+  }
+
+  room.items.forEach((item) => {
+    if (item.walkable || item.wall) {
+      return;
+    }
+    const width =
+      item.rotation === 1 || item.rotation === 3 ? item.size[1] : item.size[0];
+    const height =
+      item.rotation === 1 || item.rotation === 3 ? item.size[0] : item.size[1];
+    for (let x = 0; x < width; x++) {
+      for (let y = 0; y < height; y++) {
+        room.grid.setWalkableAt(
+          item.gridPosition[0] + x,
+          item.gridPosition[1] + y,
+          false
+        );
+      }
+    }
+  });
+};
+
+// ROOMS MANAGEMENT
+const rooms = [];
+
+const loadRooms = async () => {
+  let data;
+  try {
+    data = fs.readFileSync("rooms.json", "utf8");
+  } catch (ex) {
+    console.log("No rooms.json file found, using default file");
+    try {
+      data = fs.readFileSync("default.json", "utf8");
+    } catch (ex) {
+      console.log("No default.json file found, exiting");
+      process.exit(1);
+    }
+  }
+  data = JSON.parse(data);
+  data.forEach((roomItem) => {
+    const room = {
+      ...roomItem,
+      size: [7, 7], // HARDCODED FOR SIMPLICITY PURPOSES
+      gridDivision: 2,
+      characters: [],
+    };
+    room.grid = new pathfinding.Grid(
+      room.size[0] * room.gridDivision,
+      room.size[1] * room.gridDivision
+    );
+    updateGrid(room);
+    rooms.push(room);
+  });
+};
+
+loadRooms();
+
+// UTILS
+
+const generateRandomPosition = (room) => {
+  // TO AVOID INFINITE LOOP WE LIMIT TO 100, BEST WOULD BE TO CHECK IF THERE IS ENOUGH SPACE LEFT 🤭
+  for (let i = 0; i < 100; i++) {
+    const x = Math.floor(Math.random() * room.size[0] * room.gridDivision);
+    const y = Math.floor(Math.random() * room.size[1] * room.gridDivision);
+    if (room.grid.isWalkableAt(x, y)) {
+      return [x, y];
+    }
+  }
+};
+
+// SOCKET MANAGEMENT
+
+io.on("connection", (socket) => {
+  try {
+    let room = null;
+    let character = null;
+
+    socket.emit("welcome", {
+      rooms: rooms.map((room) => ({
+        id: room.id,
+        name: room.name,
+        nbCharacters: room.characters.length,
+      })),
+      items,
+    });
+
+    socket.on("joinRoom", (roomId, opts) => {
+      room = rooms.find((room) => room.id === roomId);
+      if (!room) {
+        return;
+      }
+      socket.join(room.id);
+      character = {
+        id: socket.id,
+        session: parseInt(Math.random() * 1000),
+        position: generateRandomPosition(room),
+        avatarUrl: opts.avatarUrl,
+      };
+      room.characters.push(character);
+
+      socket.emit("roomJoined", {
+        map: {
+          gridDivision: room.gridDivision,
+          size: room.size,
+          items: room.items,
+        },
+        characters: room.characters,
+        id: socket.id,
+      });
+      onRoomUpdate();
+    });
+
+    const onRoomUpdate = () => {
+      io.to(room.id).emit("characters", room.characters);
+      io.emit(
+        "rooms",
+        rooms.map((room) => ({
+          id: room.id,
+          name: room.name,
+          nbCharacters: room.characters.length,
+        }))
+      );
+    };
+
+    socket.on("leaveRoom", () => {
+      if (!room) {
+        return;
+      }
+      socket.leave(room.id);
+      room.characters.splice(
+        room.characters.findIndex((character) => character.id === socket.id),
+        1
+      );
+      onRoomUpdate();
+      room = null;
+    });
+
+    socket.on("characterAvatarUpdate", (avatarUrl) => {
+      character.avatarUrl = avatarUrl;
+      io.to(room.id).emit("characters", room.characters);
+    });
+
+    socket.on("move", (from, to) => {
+      const path = findPath(room, from, to);
+      if (!path) {
+        return;
+      }
+      character.position = from;
+      character.path = path;
+      io.to(room.id).emit("playerMove", character);
+    });
+
+    socket.on("dance", () => {
+      io.to(room.id).emit("playerDance", {
+        id: socket.id,
+      });
+    });
+
+    socket.on("chatMessage", (message) => {
+      io.to(room.id).emit("playerChatMessage", {
+        id: socket.id,
+        message,
+      });
+    });
+
+    socket.on("passwordCheck", (password) => {
+      if (password === room.password) {
+        socket.emit("passwordCheckSuccess");
+        character.canUpdateRoom = true;
+      } else {
+        socket.emit("passwordCheckFail");
+      }
+    });
+
+    socket.on("itemsUpdate", async (items) => {
+      if (!character.canUpdateRoom) {
+        return;
+      }
+      if (!items || items.length === 0) {
+        return; // security
+      }
+      room.items = items;
+      updateGrid(room);
+      room.characters.forEach((character) => {
+        character.path = [];
+        character.position = generateRandomPosition(room);
+      });
+      io.to(room.id).emit("mapUpdate", {
+        map: {
+          gridDivision: room.gridDivision,
+          size: room.size,
+          items: room.items,
+        },
+        characters: room.characters,
+      });
+
+      fs.writeFileSync("rooms.json", JSON.stringify(rooms, null, 2));
+    });
+
+    socket.on("disconnect", () => {
+      console.log("User disconnected");
+      if (room) {
+        room.characters.splice(
+          room.characters.findIndex((character) => character.id === socket.id),
+          1
+        );
+        onRoomUpdate();
+        room = null;
+      }
+    });
+  } catch (ex) {
+    console.log(ex); // Big try catch to avoid crashing the server (best would be to handle all errors properly...)
+  }
+});
+
+// ROOMS
+
+// SHOP ITEMS
 const items = {
   washer: {
     name: "washer",
@@ -56,6 +296,7 @@ const items = {
   loungeSofaCorner: {
     name: "loungeSofaCorner",
     size: [5, 5],
+    rotation: 2,
   },
   bear: {
     name: "bear",
@@ -73,38 +314,41 @@ const items = {
   loungeDesignSofaCorner: {
     name: "loungeDesignSofaCorner",
     size: [5, 5],
+    rotation: 2,
   },
   loungeDesignSofa: {
     name: "loungeDesignSofa",
     size: [5, 2],
+    rotation: 2,
   },
   loungeSofa: {
     name: "loungeSofa",
     size: [5, 2],
+    rotation: 2,
   },
   bookcaseOpenLow: {
     name: "bookcaseOpenLow",
     size: [2, 1],
   },
-  kitchenBar: {
-    name: "kitchenBar",
-    size: [2, 1],
-  },
   bookcaseClosedWide: {
     name: "bookcaseClosedWide",
     size: [3, 1],
+    rotation: 2,
   },
   bedSingle: {
     name: "bedSingle",
-    size: [3, 5],
+    size: [3, 6],
+    rotation: 2,
   },
   bench: {
     name: "bench",
     size: [2, 1],
+    rotation: 2,
   },
   bedDouble: {
     name: "bedDouble",
     size: [5, 5],
+    rotation: 2,
   },
   benchCushionLow: {
     name: "benchCushionLow",
@@ -113,14 +357,17 @@ const items = {
   loungeChair: {
     name: "loungeChair",
     size: [2, 2],
+    rotation: 2,
   },
   cabinetBedDrawer: {
     name: "cabinetBedDrawer",
     size: [1, 1],
+    rotation: 2,
   },
   cabinetBedDrawerTable: {
     name: "cabinetBedDrawerTable",
     size: [1, 1],
+    rotation: 2,
   },
   table: {
     name: "table",
@@ -161,10 +408,25 @@ const items = {
   televisionVintage: {
     name: "televisionVintage",
     size: [4, 2],
+    rotation: 2,
   },
   televisionModern: {
     name: "televisionModern",
     size: [4, 2],
+    rotation: 2,
+  },
+  kitchenFridge: {
+    name: "kitchenFridge",
+    size: [2, 1],
+    rotation: 2,
+  },
+  kitchenFridgeLarge: {
+    name: "kitchenFridgeLarge",
+    size: [2, 1],
+  },
+  kitchenBar: {
+    name: "kitchenBar",
+    size: [2, 1],
   },
   kitchenCabinetCornerRound: {
     name: "kitchenCabinetCornerRound",
@@ -189,10 +451,12 @@ const items = {
   chairCushion: {
     name: "chairCushion",
     size: [1, 1],
+    rotation: 2,
   },
   chair: {
     name: "chair",
     size: [1, 1],
+    rotation: 2,
   },
   deskComputer: {
     name: "deskComputer",
@@ -205,10 +469,12 @@ const items = {
   chairModernCushion: {
     name: "chairModernCushion",
     size: [1, 1],
+    rotation: 2,
   },
   chairModernFrameCushion: {
     name: "chairModernFrameCushion",
     size: [1, 1],
+    rotation: 2,
   },
   kitchenMicrowave: {
     name: "kitchenMicrowave",
@@ -261,6 +527,7 @@ const items = {
   speakerSmall: {
     name: "speakerSmall",
     size: [1, 1],
+    rotation: 2,
   },
   stoolBar: {
     name: "stoolBar",
@@ -271,274 +538,3 @@ const items = {
     size: [1, 1],
   },
 };
-
-const map = {
-  size: [10, 10],
-  gridDivision: 2,
-  items: [
-    {
-      ...items.showerRound,
-      gridPosition: [0, 0],
-    },
-    {
-      ...items.toiletSquare,
-      gridPosition: [0, 3],
-      rotation: 1,
-    },
-    {
-      ...items.washer,
-      gridPosition: [5, 0],
-    },
-    {
-      ...items.bathroomSink,
-      gridPosition: [7, 0],
-    },
-    {
-      ...items.trashcan,
-      gridPosition: [0, 5],
-      rotation: 1,
-    },
-    {
-      ...items.bathroomCabinetDrawer,
-      gridPosition: [3, 0],
-    },
-    {
-      ...items.bathtub,
-      gridPosition: [4, 4],
-    },
-    {
-      ...items.bathtub,
-      gridPosition: [0, 8],
-      rotation: 3,
-    },
-    {
-      ...items.bathroomCabinet,
-      gridPosition: [3, 0],
-    },
-    {
-      ...items.bathroomMirror,
-      gridPosition: [0, 8],
-      rotation: 1,
-    },
-    {
-      ...items.bathroomMirror,
-      gridPosition: [, 10],
-      rotation: 1,
-    },
-    {
-      ...items.tableCoffee,
-      gridPosition: [10, 8],
-    },
-    {
-      ...items.rugRectangle,
-      gridPosition: [8, 7],
-    },
-    {
-      ...items.loungeSofaCorner,
-      gridPosition: [6, 10],
-    },
-    {
-      ...items.bear,
-      gridPosition: [0, 3],
-      rotation: 1,
-    },
-    {
-      ...items.plant,
-      gridPosition: [11, 13],
-    },
-    {
-      ...items.cabinetBedDrawerTable,
-      gridPosition: [13, 19],
-    },
-    {
-      ...items.cabinetBedDrawer,
-      gridPosition: [19, 19],
-    },
-    {
-      ...items.bedDouble,
-      gridPosition: [14, 15],
-    },
-    {
-      ...items.bookcaseClosedWide,
-      gridPosition: [12, 0],
-      rotation: 2,
-    },
-    {
-      ...items.speaker,
-      gridPosition: [11, 0],
-    },
-    {
-      ...items.speakerSmall,
-      gridPosition: [15, 0],
-    },
-    {
-      ...items.loungeChair,
-      gridPosition: [10, 4],
-    },
-    {
-      ...items.loungeSofaOttoman,
-      gridPosition: [14, 4],
-    },
-    {
-      ...items.loungeDesignSofa,
-      gridPosition: [18, 0],
-      rotation: 1,
-    },
-    {
-      ...items.kitchenCabinetCornerRound,
-      gridPosition: [2, 18],
-      rotation: 2,
-    },
-    {
-      ...items.kitchenCabinetCornerInner,
-      gridPosition: [0, 18],
-      rotation: 2,
-    },
-    {
-      ...items.kitchenStove,
-      gridPosition: [0, 16],
-      rotation: 1,
-    },
-    {
-      ...items.dryer,
-      gridPosition: [0, 14],
-      rotation: 1,
-    },
-    {
-      ...items.lampRoundFloor,
-      gridPosition: [0, 12],
-    },
-  ],
-};
-
-const grid = new pathfinding.Grid(
-  map.size[0] * map.gridDivision,
-  map.size[1] * map.gridDivision,
-);
-
-const finder = new pathfinding.AStarFinder({
-  allowDiagonal: true,
-  dontCrossCorners: true,
-});
-
-const findPath = (start, end) => {
-  const gridClone = grid.clone();
-  const path = finder.findPath(start[0], start[1], end[0], end[1], gridClone);
-  return path;
-};
-
-const updateGrid = () => {
-  // RESET
-  for (let x = 0; x < map.size[0] * map.gridDivision; x++) {
-    for (let y = 0; y < map.size[1] * map.gridDivision; y++) {
-      grid.setWalkableAt(x, y, true);
-    }
-  }
-
-  map.items.forEach((item) => {
-    if (item.walkable || item.wall) {
-      return;
-    }
-    const width =
-      item.rotation === 1 || item.rotation === 3 ? item.size[1] : item.size[0];
-    const height =
-      item.rotation === 1 || item.rotation === 3 ? item.size[0] : item.size[1];
-    for (let x = 0; x < width; x++) {
-      for (let y = 0; y < height; y++) {
-        grid.setWalkableAt(
-          item.gridPosition[0] + x,
-          item.gridPosition[1] + y,
-          false,
-        );
-      }
-    }
-  });
-};
-
-updateGrid();
-
-const generateRandomPosition = () => {
-  for (let i = 0; i < 100; i++) {
-    const x = Math.floor(Math.random() * map.size[0] * map.gridDivision);
-    const y = Math.floor(Math.random() * map.size[1] * map.gridDivision);
-    if (grid.isWalkableAt(x, y)) {
-      return [x, y];
-    }
-  }
-};
-
-const generateRandomHexColor = () => {
-  return "#" + Math.floor(Math.random() * 16777215).toString(16);
-};
-
-io.on("connection", (socket) => {
-  console.log("user connected");
-
-  characters.push({
-    id: socket.id,
-    position: generateRandomPosition(),
-    hairColor: generateRandomHexColor(),
-    topColor: generateRandomHexColor(),
-    bottomColor: generateRandomHexColor(),
-    avatarUrl: "https://models.readyplayer.me/673103d3a06abaf268eb0ff8.glb",
-  });
-
-  socket.emit("hello", {
-    map,
-    characters,
-    id: socket.id,
-    items,
-  });
-
-  io.emit("characters", characters);
-
-  socket.on("characterAvatarUpdate", (avatarUrl) => {
-    const character = characters.find(
-      (character) => character.id === socket.id,
-    );
-    character.avatarUrl = avatarUrl.split("?")[0] + "?" + new Date().getTime();
-    io.emit("characters", characters);
-  });
-
-  socket.on("move", (from, to) => {
-    const character = characters.find(
-      (character) => character.id === socket.id,
-    );
-    const path = findPath(from, to);
-    if (!path) {
-      return;
-    }
-    character.position = from;
-    character.path = path;
-    io.emit("playerMove", character);
-  });
-
-  socket.on("dance", () => {
-    io.emit("playerDance", {
-      id: socket.id,
-    });
-  });
-
-  socket.on("itemsUpdate", (items) => {
-    map.items = items;
-    characters.forEach((character) => {
-      character.path = [];
-      character.position = generateRandomPosition();
-    });
-    updateGrid();
-    io.emit("mapUpdate", {
-      map,
-      characters,
-    });
-  });
-
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
-
-    characters.splice(
-      characters.findIndex((character) => character.id === socket.id),
-      1,
-    );
-    io.emit("characters", characters);
-  });
-});

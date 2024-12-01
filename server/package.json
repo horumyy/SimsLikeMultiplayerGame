@@ -1,7 +1,8 @@
 {
   "type": "module",
   "scripts": {
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js --ignore '*.json'",
+    "start": "NODE_ENV=production node index.js"
   },
   "dependencies": {
     "pathfinding": "^0.4.18",
