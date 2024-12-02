@@ -15,6 +15,7 @@
     "@readyplayerme/react-avatar-creator": "^0.3.0",
     "@types/three": "0.152.1",
     "autoprefixer": "^10.4.15",
+    "esbuild": "^0.24.0",
     "framer-motion": "^10.16.4",
     "framer-motion-3d": "^10.16.4",
     "hugeicons-react": "^0.3.0",
