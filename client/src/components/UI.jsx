@@ -172,6 +172,20 @@ const BuildButton = (props) => {
     socket.emit("passwordCheck", "_");
   };
 
+  useEffect(() => {
+    socket.on("passwordCheckSuccess", () => {
+      props.onSuccess();
+      props.onClose();
+    });
+    socket.on("passwordCheckFail", () => {
+      setError("Wrong password");
+    });
+    return () => {
+      socket.off("passwordCheckSuccess");
+      socket.off("passwordCheckFail");
+    };
+  });
+
   return (
     <button
       className="p-4 rounded-full bg-gradient-to-b from-blue-500  to-blue-300 hover:scale-110 relative text-white drop-shadow-md cursor-pointer transition-all duration-350 pointer-events-auto"
