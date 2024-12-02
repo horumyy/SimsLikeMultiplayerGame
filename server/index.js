@@ -47,7 +47,7 @@ const updateGrid = (room) => {
         room.grid.setWalkableAt(
           item.gridPosition[0] + x,
           item.gridPosition[1] + y,
-          false
+          false,
         );
       }
     }
@@ -80,7 +80,7 @@ const loadRooms = async () => {
     };
     room.grid = new pathfinding.Grid(
       room.size[0] * room.gridDivision,
-      room.size[1] * room.gridDivision
+      room.size[1] * room.gridDivision,
     );
     updateGrid(room);
     rooms.push(room);
@@ -152,7 +152,7 @@ io.on("connection", (socket) => {
           id: room.id,
           name: room.name,
           nbCharacters: room.characters.length,
-        }))
+        })),
       );
     };
 
@@ -163,7 +163,7 @@ io.on("connection", (socket) => {
       socket.leave(room.id);
       room.characters.splice(
         room.characters.findIndex((character) => character.id === socket.id),
-        1
+        1,
       );
       onRoomUpdate();
       room = null;
@@ -184,9 +184,10 @@ io.on("connection", (socket) => {
       io.to(room.id).emit("playerMove", character);
     });
 
-    socket.on("dance", () => {
+    socket.on("dance", (danceId) => {
       io.to(room.id).emit("playerDance", {
         id: socket.id,
+        danceId,
       });
     });
 
@@ -236,7 +237,7 @@ io.on("connection", (socket) => {
       if (room) {
         room.characters.splice(
           room.characters.findIndex((character) => character.id === socket.id),
-          1
+          1,
         );
         onRoomUpdate();
         room = null;

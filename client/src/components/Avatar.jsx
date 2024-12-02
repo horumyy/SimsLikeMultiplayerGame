@@ -38,18 +38,33 @@ export function Avatar({
   const { animations: danceAnimation } = useGLTF(
     "/animations/M_Dances_004.glb",
   );
+
+  const { animations: danceAnimation2 } = useGLTF(
+    "/animations/M_Dances_003.glb",
+  );
+
+  const { animations: danceAnimation3 } = useGLTF(
+    "/animations/M_Dances_006.glb",
+  );
   const { animations: idleAnimation } = useGLTF(
     "/animations/M_Standing_Idle_001.glb",
   );
 
   const { actions } = useAnimations(
-    [walkAnimation[0], idleAnimation[0], danceAnimation[0]],
+    [
+      walkAnimation[0],
+      idleAnimation[0],
+      danceAnimation[0],
+      danceAnimation2[0],
+      danceAnimation3[0],
+    ],
     avatar,
   );
   const [animation, setAnimation] = useState("M_Standing_Idle_001");
   const [isDancing, setIsDancing] = useState(false);
   const [init, setInit] = useState(false);
   const [showChatBubble, setShowChatBubble] = useState(false);
+  const [danceId, setDanceId] = useState(0);
 
   useEffect(() => {
     clone.traverse((child) => {
@@ -71,7 +86,17 @@ export function Avatar({
 
   useEffect(() => {
     function onPlayerDance(value) {
+      console.log(value);
       if (value.id === id) {
+        if (value.danceId === 0) {
+          setAnimation("M_Dances_004");
+        }
+        if (value.danceId === 1) {
+          setAnimation("M_Dances_003");
+        }
+        if (value.danceId === 2) {
+          setAnimation("M_Dances_006");
+        }
         setIsDancing(true);
       }
     }
@@ -125,9 +150,7 @@ export function Avatar({
     } else if (path?.length) {
       path.shift();
     } else {
-      if (isDancing) {
-        setAnimation("M_Dances_004");
-      } else {
+      if (!isDancing) {
         setAnimation("M_Standing_Idle_001");
       }
     }
@@ -184,3 +207,5 @@ useGLTF.preload("/animations/M_Walk_001.glb");
 useGLTF.preload("/animations/M_Standing_Idle_001.glb");
 useGLTF.preload("/animations/M_Dances_004.glb");
 useGLTF.preload("/animations/M_Standing_Expressions_001.glb");
+useGLTF.preload("/animations/M_Dances_003.glb");
+useGLTF.preload("/animations/M_Dances_006.glb");

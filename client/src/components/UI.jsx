@@ -17,6 +17,28 @@ export const avatarUrlAtom = atom(
     "https://models.readyplayer.me/673103d3a06abaf268eb0ff8.glb",
 );
 
+function CircularButton({ isHoveringAvatarCircle, index, total }) {
+  const angle = (index / (total - 1) - 0.5) * Math.PI * 0.5; // Adjust this value to change the curve
+  const radius = 90; // Adjust this value to change the distance from the center
+  const x = Math.cos(angle) * radius;
+  const y = Math.sin(angle) * radius;
+
+  return (
+    <motion.div
+      className="absolute"
+      animate={
+        isHoveringAvatarCircle
+          ? { opacity: 1, scale: 1, x, y }
+          : { opacity: 0, scale: 0.8, x: 0, y: 0 }
+      }
+      style={{
+        transform: `translate(${x}px, ${y}px)`,
+      }}
+    >
+      <DanceButton index={index} />
+    </motion.div>
+  );
+}
 const PasswordInput = ({ onClose, onSuccess }) => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -81,7 +103,7 @@ const Chat = (props) => {
     }
   };
   return (
-    <div className="pointer-events-auto flex  items-center space-x-4">
+    <div className="pointer-events-auto flex  items-center space-x-2">
       <input
         type="text"
         className="w-40 sm:w-56 border px-5 p-4 h-12 rounded-full"
@@ -95,7 +117,7 @@ const Chat = (props) => {
         onChange={(e) => setChatMessage(e.target.value)}
       />
       <button
-        className="p-4 rounded-full bg-slate-500 text-white drop-shadow-md cursor-pointer hover:bg-slate-800 transition-colors"
+        className="p-3 rounded-full bg-slate-500 text-white drop-shadow-md cursor-pointer hover:bg-slate-800 transition-colors"
         onClick={sendChatMessage}
       >
         <svg
@@ -190,11 +212,11 @@ const BuildButton = (props) => {
   );
 };
 
-const DanceButton = () => {
+const DanceButton = (props) => {
   return (
     <button
-      className="p-4 pointer-events-auto top-0 right-0 absolute rounded-full bg-slate-500 text-white drop-shadow-md cursor-pointer hover:bg-slate-800 transition-colors"
-      onClick={() => socket.emit("dance")}
+      className="p-4 pointer-events-auto rounded-full bg-slate-500 text-white drop-shadow-md cursor-pointer hover:bg-slate-800 transition-colors"
+      onClick={() => socket.emit("dance", props.index)}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -334,6 +356,8 @@ export const UI = () => {
   const [avatarUrl, setAvatarUrl] = useAtom(avatarUrlAtom);
   const [roomID, setRoomID] = useAtom(roomIDAtom);
   const [passwordCorrectForRoom, setPasswordCorrectForRoom] = useState(false);
+  const [numButtons] = useState(3); // You can adjust this number
+  const [isHoveringAvatarCircle, setIsHoveringAvatarCircle] = useState(false);
   useEffect(() => {
     setPasswordCorrectForRoom(false); // PS: this is an ugly shortcut
   }, [roomID]);
@@ -398,9 +422,13 @@ export const UI = () => {
               )}
             </div>
           )}
-          <div className="flex items-end">
-            <div className="relative ">
-              <div className="bg-pink-200 overflow-hidden rounded-full w-[10rem] h-[10rem]">
+          <div className="flex items-end space-x-6 mb-3">
+            <div
+              onMouseEnter={() => setIsHoveringAvatarCircle(true)}
+              onMouseLeave={() => setIsHoveringAvatarCircle(false)}
+              className="relative flex items-center justify-start w-full"
+            >
+              <div className="bg-pink-200 overflow-hidden  rounded-full w-[10rem] h-[10rem]">
                 <Canvas>
                   <ambientLight intensity={1} />
                   <ChatAvatar
@@ -411,8 +439,18 @@ export const UI = () => {
                   />
                 </Canvas>
               </div>
-              {/* DANCE */}
-              {roomID && !buildMode && !shopMode && <DanceButton />}
+              {roomID && !buildMode && !shopMode && (
+                <div className="absolute top-14 left-12">
+                  {[...Array(numButtons)].map((_, index) => (
+                    <CircularButton
+                      isHoveringAvatarCircle={isHoveringAvatarCircle}
+                      key={index}
+                      index={index}
+                      total={numButtons}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
             <div>
               <div className="flex items-center space-x-4 pointer-events-auto">
