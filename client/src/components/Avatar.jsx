@@ -12,6 +12,7 @@ import { useGrid } from "../hooks/useGrid";
 import { socket, userAtom } from "./SocketManager";
 
 import { motion } from "framer-motion-3d";
+import { PlayerIndicator } from "./PlayerIndicator";
 
 const MOVEMENT_SPEED = 4;
 
@@ -193,6 +194,7 @@ export function Avatar({
           damping: 42,
         }}
       >
+        {user === id && <PlayerIndicator />}
         <primitive object={clone} ref={avatar} />
       </motion.group>
     </group>
@@ -201,7 +203,7 @@ export function Avatar({
 
 useGLTF.preload(
   localStorage.getItem("avatarURL") ||
-    "https://models.readyplayer.me/64f0265b1db75f90dcfd9e2c.glb?meshlod=1&quality=medium",
+    "https://models.readyplayer.me/673103d3a06abaf268eb0ff8.glb",
 );
 useGLTF.preload("/animations/M_Walk_001.glb");
 useGLTF.preload("/animations/M_Standing_Idle_001.glb");

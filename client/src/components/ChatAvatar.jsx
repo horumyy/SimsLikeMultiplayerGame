@@ -99,7 +99,7 @@ export function ChatAvatar({
 
 useGLTF.preload(
   localStorage.getItem("avatarURL") ||
-    "https://models.readyplayer.me/64f0265b1db75f90dcfd9e2c.glb?meshlod=1&quality=medium",
+    "https://models.readyplayer.me/673103d3a06abaf268eb0ff8.glb",
 );
 useGLTF.preload("/animations/M_Standing_Idle_001.glb");
 useGLTF.preload("/animations/F_Talking_Variations_002.glb");

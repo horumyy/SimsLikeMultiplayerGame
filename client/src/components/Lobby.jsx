@@ -46,7 +46,7 @@ export const Lobby = () => {
   );
 
   return (
-    <group position-y={-1.5}>
+    <group position-x={1.0} position-y={-1.5}>
       <group position-z={-8} rotation-y={Math.PI / 6}>
         <Text3D
           font={"fonts/Inter_Bold.json"}
@@ -91,7 +91,7 @@ export const Lobby = () => {
       <Suspense>
         <LobbyAvatar
           position-z={-1}
-          position-x={0.5 * goldenRatio}
+          position-x={-0.5 * goldenRatio}
           position-y={isMobile ? -0.4 : 0}
           rotation-y={-Math.PI / 8}
         />

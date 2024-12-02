@@ -1,6 +1,17 @@
 import { atom, useAtom } from "jotai";
+import { GrSend } from "react-icons/gr";
 import { useEffect, useRef, useState } from "react";
-
+import {
+  TiCog,
+  TiHome,
+  TiArrowBack,
+  TiUser,
+  TiTrash,
+  TiArrowSyncOutline,
+  TiArrowSync,
+  TiChevronLeft,
+  TiShoppingCart,
+} from "react-icons/ti";
 import { AvatarCreator } from "@readyplayerme/react-avatar-creator";
 import { motion } from "framer-motion";
 import { roomItemsAtom } from "./Room";
@@ -107,7 +118,7 @@ const Chat = (props) => {
       <input
         type="text"
         className="w-40 sm:w-56 border px-5 p-4 h-12 rounded-full"
-        placeholder="Chat"
+        placeholder="Type a message..."
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             sendChatMessage();
@@ -117,23 +128,10 @@ const Chat = (props) => {
         onChange={(e) => setChatMessage(e.target.value)}
       />
       <button
-        className="p-3 rounded-full bg-slate-500 text-white drop-shadow-md cursor-pointer hover:bg-slate-800 transition-colors"
+        className="p-3 rounded-full bg-gradient-to-b from-blue-500  to-blue-300 hover:scale-110 relative text-white drop-shadow-md cursor-pointer transition-all duration-350 pointer-events-auto"
         onClick={sendChatMessage}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="w-6 h-6"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"
-          />
-        </svg>
+        <GrSend size={24} />
       </button>
     </div>
   );
@@ -148,10 +146,10 @@ const QuitToLobby = (props) => {
   };
   return (
     <button
-      className="p-4  rounded-full bg-slate-500 text-white drop-shadow-md cursor-pointer hover:bg-slate-800 transition-colors pointer-events-auto"
+      className="p-4 bg-gradient-to-b from-green-500 to-green-300 transition-all duration-350 hover:scale-110 rounded-full bg-slate-500 text-white drop-shadow-md cursor-pointer pointer-events-auto"
       onClick={leaveRoom}
     >
-      LOBBY
+      <TiArrowBack />
     </button>
   );
 };
@@ -159,34 +157,44 @@ const QuitToLobby = (props) => {
 const BackButton = (props) => {
   return (
     <button
-      className="p-4 rounded-full bg-slate-500 text-white drop-shadow-md cursor-pointer hover:bg-slate-800 transition-colors pointer-events-auto"
+      className="p-4 rounded-full bg-gradient-to-b from-blue-500  to-blue-300 hover:scale-110 relative text-white drop-shadow-md cursor-pointer transition-all duration-350 pointer-events-auto"
       onClick={() => {
         props.shopMode ? props.setShopMode(false) : props.setBuildMode(false);
       }}
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        className="w-6 h-6"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"
-        />
-      </svg>
+      <TiChevronLeft size={24} />
     </button>
   );
 };
 
 const BuildButton = (props) => {
+  const forceSuccess = () => {
+    socket.emit("passwordCheck", "_");
+  };
+
+  useEffect(() => {
+    socket.on("passwordCheckSuccess", () => {
+      props.onSuccess();
+      props.onClose();
+    });
+    socket.on("passwordCheckFail", () => {
+      setError("Wrong password");
+    });
+    return () => {
+      socket.off("passwordCheckSuccess");
+      socket.off("passwordCheckFail");
+    };
+  });
+
   return (
     <button
-      className="p-4 rounded-full bg-slate-500 text-white drop-shadow-md cursor-pointer hover:bg-slate-800 transition-colors pointer-events-auto"
+      className="p-4 rounded-full bg-gradient-to-b from-blue-500  to-blue-300 hover:scale-110 relative text-white drop-shadow-md cursor-pointer transition-all duration-350 pointer-events-auto"
       onClick={() => {
+        if (props.roomId === 4) {
+          forceSuccess();
+          props.setBuildMode(true);
+          return;
+        }
         if (!props.passwordCorrectForRoom) {
           props.setPasswordMode(true);
         } else {
@@ -194,20 +202,8 @@ const BuildButton = (props) => {
         }
       }}
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        className="w-6 h-6"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
-        />
-      </svg>
+      <TiHome size={24} />
+      <TiCog className="absolute bottom-2 right-2 text-gray-500" size={20} />
     </button>
   );
 };
@@ -215,13 +211,13 @@ const BuildButton = (props) => {
 const DanceButton = (props) => {
   return (
     <button
-      className="p-4 pointer-events-auto rounded-full bg-slate-500 text-white drop-shadow-md cursor-pointer hover:bg-slate-800 transition-colors"
+      className="p-4 rounded-full bg-gradient-to-b from-blue-500  to-blue-300 hover:scale-110 relative text-white drop-shadow-md cursor-pointer transition-all duration-350 pointer-events-auto"
       onClick={() => socket.emit("dance", props.index)}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
-        viewBox="0 0 24 24"
+        viewBox="1 0 24 24"
         strokeWidth={1.5}
         stroke="currentColor"
         className="w-6 h-6"
@@ -239,27 +235,14 @@ const DanceButton = (props) => {
 const RotateButton = (props) => {
   return (
     <button
-      className="p-4 rounded-full bg-slate-500 text-white drop-shadow-md cursor-pointer hover:bg-slate-800 transition-colors"
+      className="p-4 rounded-full bg-gradient-to-b from-blue-500  to-blue-300 hover:scale-110 relative text-white drop-shadow-md cursor-pointer transition-all duration-350 pointer-events-auto"
       onClick={() =>
         props.setDraggedItemRotation(
           props.draggedItemRotation === 3 ? 0 : props.draggedItemRotation + 1,
         )
       }
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        className="w-6 h-6"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
-        />
-      </svg>
+      <TiArrowSync size={24} />
     </button>
   );
 };
@@ -267,23 +250,10 @@ const RotateButton = (props) => {
 const ShopButton = (props) => {
   return (
     <button
-      className="p-4 rounded-full bg-slate-500 text-white drop-shadow-md cursor-pointer hover:bg-slate-800 transition-colors"
+      className="p-4 rounded-full bg-gradient-to-b from-amber-500  to-amber-300 hover:scale-110 relative text-white drop-shadow-md cursor-pointer transition-all duration-350 pointer-events-auto"
       onClick={() => props.setShopMode(true)}
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        className="w-6 h-6"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z"
-        />
-      </svg>
+      <TiShoppingCart size={24} />
     </button>
   );
 };
@@ -291,23 +261,24 @@ const ShopButton = (props) => {
 const CancelButton = (props) => {
   return (
     <button
-      className="p-4 rounded-full bg-slate-500 text-white drop-shadow-md cursor-pointer hover:bg-slate-800 transition-colors"
+      className="p-4 rounded-full bg-gradient-to-b from-blue-500  to-blue-300 hover:scale-110 relative text-white drop-shadow-md cursor-pointer transition-all duration-350 pointer-events-auto"
       onClick={() => props.setDraggedItem(null)}
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        className="w-6 h-6"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M6 18L18 6M6 6l12 12"
-        />
-      </svg>
+      <TiChevronLeft size={24} />
+    </button>
+  );
+};
+
+const CustomizeAvatarButton = (props) => {
+  return (
+    <button
+      className="p-4 rounded-full bg-gradient-to-b from-blue-500  to-blue-300 hover:scale-110 relative text-white drop-shadow-md cursor-pointer transition-all duration-350 pointer-events-auto"
+      onClick={() => {
+        props.setAvatarMode(true);
+      }}
+    >
+      <TiUser size={24} />
+      <TiCog className="absolute bottom-2 right-2 text-gray-500" size={20} />
     </button>
   );
 };
@@ -315,7 +286,7 @@ const CancelButton = (props) => {
 const RemoveItemButton = (props) => {
   return (
     <button
-      className="p-4 rounded-full bg-slate-500 text-white drop-shadow-md cursor-pointer hover:bg-slate-800 transition-colors"
+      className="p-4 rounded-full bg-gradient-to-b from-red-500  to-red-300 hover:scale-110 relative text-white drop-shadow-md cursor-pointer transition-all duration-350 pointer-events-auto"
       onClick={() => {
         props.setRoomItems((prev) => {
           const newItems = [...prev];
@@ -325,20 +296,7 @@ const RemoveItemButton = (props) => {
         props.setDraggedItem(null);
       }}
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        className="w-6 h-6"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-        />
-      </svg>
+      <TiTrash size={24} />
     </button>
   );
 };
@@ -412,23 +370,15 @@ export const UI = () => {
                 setBuildMode={setBuildMode}
                 setShopMode={setShopMode}
               />
-              {roomID && !buildMode && !shopMode && (
-                <BuildButton
-                  setBuildMode={setBuildMode}
-                  setPasswordMode={setPasswordMode}
-                  passwordCorrectForRoom={passwordCorrectForRoom}
-                  setPasswordCorrectForRoom={setPasswordCorrectForRoom}
-                />
-              )}
             </div>
           )}
-          <div className="flex items-end space-x-6 mb-3">
+          <div className="flex items-end space-x-4 mb-3">
             <div
               onMouseEnter={() => setIsHoveringAvatarCircle(true)}
               onMouseLeave={() => setIsHoveringAvatarCircle(false)}
               className="relative flex items-center justify-start w-full"
             >
-              <div className="bg-pink-200 overflow-hidden  rounded-full w-[10rem] h-[10rem]">
+              <div className="bg-gradient-to-b from-green-500 to-green-300   overflow-hidden  rounded-full w-[10rem] h-[10rem]">
                 <Canvas>
                   <ambientLight intensity={1} />
                   <ChatAvatar
@@ -439,8 +389,31 @@ export const UI = () => {
                   />
                 </Canvas>
               </div>
+
+              <div className="absolute -top-4 left-0">
+                {roomID && !buildMode && !shopMode && (
+                  <BuildButton
+                    roomId={roomID}
+                    setBuildMode={setBuildMode}
+                    setPasswordMode={setPasswordMode}
+                    onClose={() => setPasswordMode(false)}
+                    onSuccess={() => {
+                      setBuildMode(true);
+                      setPasswordCorrectForRoom(true);
+                    }}
+                    passwordCorrectForRoom={passwordCorrectForRoom}
+                    setPasswordCorrectForRoom={setPasswordCorrectForRoom}
+                  />
+                )}
+              </div>
+
+              <div className="absolute -bottom-4 left-0">
+                {roomID && !buildMode && !shopMode && (
+                  <CustomizeAvatarButton setAvatarMode={setAvatarMode} />
+                )}
+              </div>
               {roomID && !buildMode && !shopMode && (
-                <div className="absolute top-14 left-12">
+                <div className="absolute top-14 left-10">
                   {[...Array(numButtons)].map((_, index) => (
                     <CircularButton
                       isHoveringAvatarCircle={isHoveringAvatarCircle}
@@ -468,16 +441,17 @@ export const UI = () => {
                   <ShopButton setShopMode={setShopMode} />
                 )}
 
+                {/* CANCEL */}
+                {buildMode && !shopMode && draggedItem !== null && (
+                  <CancelButton setDraggedItem={setDraggedItem} />
+                )}
+
                 {/* ROTATE */}
                 {buildMode && !shopMode && draggedItem !== null && (
                   <RotateButton
                     draggedItemRotation={draggedItemRotation}
                     setDraggedItemRotation={setDraggedItemRotation}
                   />
-                )}
-                {/* CANCEL */}
-                {buildMode && !shopMode && draggedItem !== null && (
-                  <CancelButton setDraggedItem={setDraggedItem} />
                 )}
                 {/* REMOVE ITEM */}
                 {buildMode && !shopMode && draggedItem !== null && (

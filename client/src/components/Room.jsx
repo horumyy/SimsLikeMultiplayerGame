@@ -177,7 +177,7 @@ export const Room = () => {
         alphaTest={0.85}
         scale={30}
         position={[0, 0, 0]}
-        color="pink"
+        color="#daedf5"
       >
         <RandomizedLight
           amount={4}
@@ -252,8 +252,8 @@ export const Room = () => {
         <Grid
           infiniteGrid
           fadeDistance={50}
-          cellColor={"#6f6f6f"}
-          sectionColor={"#9d4b4b"}
+          cellColor={"#5898F8"}
+          sectionColor={"#2BC864"}
           fadeStrength={5}
         />
       )}
