@@ -1,3 +1,4 @@
+https://simslikemultiplayergame-production.up.railway.app/:5173
 # global options
 {
 	admin off # theres no need for the admin api in railway's environment
