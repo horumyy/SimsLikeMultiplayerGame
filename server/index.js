@@ -192,7 +192,7 @@ io.on("connection", (socket) => {
     });
 
     socket.on("chatMessage", (message) => {
-      io.to(room.id).emit("plyerayerChatMessage", {
+      io.to(room.id).emit("playerChatMessage", {
         id: socket.id,
         message,
       });
