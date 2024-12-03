@@ -53,7 +53,9 @@ export const Loader = ({ loaded }) => {
               ease: "easeInOut",
             }}
           >
-            <h1 className="text-5xl font-bold text-white">SIM</h1>
+            <h1 className="text-5xl font-bold text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]">
+              SIM
+            </h1>
             <h1 className="absolute -bottom-2 -right-2 -rotate-12 text-lg drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] text-green-500 font-bold">
               ilars
             </h1>
