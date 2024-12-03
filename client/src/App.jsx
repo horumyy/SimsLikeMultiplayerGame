@@ -23,7 +23,6 @@ import {
 } from "./components/UI";
 
 import { StarFaceIcon } from "hugeicons-react";
-import { TiUser } from "react-icons/ti";
 
 let firstLoad = true;
 
@@ -125,11 +124,11 @@ function App() {
                   based on wawa sensei's course
                 </p>
                 <p className="text-center text-white">Select a room to join</p>
-                <div className="grid grid-cols-1 gap-4">
+                <div className="flex flex-col justify-center items-center gap-4">
                   {rooms.map((room) => (
                     <div
                       key={room.id}
-                      className="p-4 rounded-lg bg-white bg-opacity-70 text-pink-700 hover:bg-pink-50 hover:bg-opacity-70 transition-colors cursor-pointer pointer-events-auto flex items-center justify-between size-64"
+                      className="p-4 h-12 w-[90%] rounded-lg bg-white bg-opacity-70 text-pink-700 hover:bg-pink-50 hover:bg-opacity-70 transition-colors cursor-pointer pointer-events-auto flex items-center justify-between size-64"
                       onClick={() => joinRoom(room.id)}
                     >
                       <p className="text-uppercase font-bold text-lg">
@@ -146,13 +145,28 @@ function App() {
                 </div>
               </div>
               {!buildMode && !shopMode && (
-                <button
-                  className="pointer-events-auto hover:scale-110 p-4 rounded-lg bg-white bg-opacity-70 text-pink-700 hover:bg-pink-50 hover:bg-opacity-70 transition-cursor-pointer flex items-center justify-center space-x-2 size-64"
-                  onClick={() => setAvatarMode(true)}
-                >
-                  <h1>Customize your avatar!</h1>
-                  <TiUser size={32} />
-                </button>
+                <div className="w-full items-center justify-center flex">
+                  <button
+                    className="pointer-events-auto hover:scale-110 p-4 h-10 w-[90%] rounded-lg bg-white bg-opacity-70 text-pink-700 hover:bg-pink-50 hover:bg-opacity-70 transition-cursor-pointer flex items-center justify-center space-x-2 size-64"
+                    onClick={() => setAvatarMode(true)}
+                  >
+                    <h1>Customize your avatar!</h1>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-6 h-6"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+                      />
+                    </svg>
+                  </button>
+                </div>
               )}
             </div>
           </div>
