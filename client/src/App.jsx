@@ -98,7 +98,7 @@ function App() {
       )}
       {loaded && !roomID && (
         <motion.div
-          className="absolute left-0 top-0 w-full h-full overflow-hidden"
+          className="absolute left-0 top-0 "
           initial={{ x: "-100%" }}
           animate={{ x: 0 }}
           transition={{
